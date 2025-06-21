@@ -1,1 +1,232 @@
+<!DOCTYPE html>
+<html lang="th">
 
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Receipt Designer - โปรแกรมออกแบบใบเสร็จรับเงิน</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🧾</text></svg>">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700&family=Prompt:wght@300;400;500;600;700&family=Kanit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+
+<body>
+  <div class="app-container">
+    <!-- Header -->
+    <header class="app-header">
+      <div class="header-content">
+        <h1><i class="fas fa-receipt"></i> Receipt Designer</h1>
+        <div class="header-actions">
+          <div class="mode-buttons">
+            <button class="mode-btn" id="editMode">
+              <i class="fas fa-edit"></i> แก้ไข
+            </button>
+            <button class="mode-btn active" id="previewMode">
+              <i class="fas fa-eye"></i> ดูตัวอย่าง
+            </button>
+          </div>
+          <button class="btn btn-secondary" id="newReceipt">
+            <i class="fas fa-plus"></i> ใบเสร็จใหม่
+          </button>
+          <button class="btn btn-outline" id="resetCompanyData" title="รีเซ็ตข้อมูลบริษัทเป็นค่าเริ่มต้น">
+            <i class="fas fa-undo"></i> รีเซ็ตข้อมูลบริษัท
+          </button>
+          <button class="btn btn-primary" id="printReceipt" disabled>
+            <i class="fas fa-print"></i> พิมพ์
+          </button>
+          <button class="btn btn-warning" id="exportPdf" disabled>
+            <i class="fas fa-file-pdf"></i> Export PDF
+          </button>
+        </div>
+      </div>
+    </header>
+
+    <!-- Format Toolbar (hidden by default) -->
+    <div class="format-toolbar" id="formatToolbar" style="display: none;">
+      <div class="toolbar-content">
+        <div class="toolbar-group">
+          <button class="toolbar-btn" data-command="bold" title="ตัวหนา">
+            <i class="fas fa-bold"></i>
+          </button>
+          <button class="toolbar-btn" data-command="italic" title="ตัวเอียง">
+            <i class="fas fa-italic"></i>
+          </button>
+          <button class="toolbar-btn" data-command="underline" title="ขีดเส้นใต้">
+            <i class="fas fa-underline"></i>
+          </button>
+        </div>
+
+        <div class="toolbar-separator"></div>
+
+        <div class="toolbar-group">
+          <button class="toolbar-btn" data-command="justifyLeft" title="จัดซ้าย">
+            <i class="fas fa-align-left"></i>
+          </button>
+          <button class="toolbar-btn" data-command="justifyCenter" title="จัดกลาง">
+            <i class="fas fa-align-center"></i>
+          </button>
+          <button class="toolbar-btn" data-command="justifyRight" title="จัดขวา">
+            <i class="fas fa-align-right"></i>
+          </button>
+        </div>
+
+        <div class="toolbar-separator"></div>
+
+        <div class="toolbar-group">
+          <label class="toolbar-label">ฟอนต์:</label>
+          <select class="toolbar-select" id="fontSizeSelect">
+            <option value="12">12px</option>
+            <option value="14" selected>14px</option>
+            <option value="16">16px</option>
+            <option value="18">18px</option>
+            <option value="20">20px</option>
+            <option value="24">24px</option>
+            <option value="28">28px</option>
+            <option value="32">32px</option>
+          </select>
+        </div>
+
+        <div class="toolbar-group">
+          <label class="toolbar-label">สี:</label>
+          <input type="color" class="toolbar-color" id="textColor" value="#000000" title="สีข้อความ">
+        </div>
+      </div>
+    </div>
+
+    <div class="app-body">
+      <!-- Sidebar -->
+      <aside class="sidebar">
+        <div class="sidebar-section">
+          <h3><i class="fas fa-palette"></i> เทมเพลต</h3>
+          <div class="template-grid">
+            <div class="template-card" data-template="modern">
+              <div class="template-preview">
+                <i class="fas fa-file-invoice"></i>
+              </div>
+              <h4>โมเดิร์น</h4>
+            </div>
+            <div class="template-card" data-template="classic">
+              <div class="template-preview">
+                <i class="fas fa-scroll"></i>
+              </div>
+              <h4>คลาสสิก</h4>
+            </div>
+            <div class="template-card" data-template="minimal">
+              <div class="template-preview">
+                <i class="fas fa-file-alt"></i>
+              </div>
+              <h4>มินิมอล</h4>
+            </div>
+          </div>
+        </div>
+
+        <div class="sidebar-section">
+          <h3><i class="fas fa-cog"></i> การตั้งค่า</h3>
+          <div class="form-group">
+            <label>สีหลัก</label>
+            <input type="color" id="primaryColor" value="#2c3e50">
+          </div>
+          <div class="form-group">
+            <label>สีรอง</label>
+            <input type="color" id="secondaryColor" value="#3498db">
+          </div>
+          <div class="form-group">
+            <label>ฟอนต์</label>
+            <select id="fontFamily">
+              <option value="'Sarabun', sans-serif">Sarabun</option>
+              <option value="'Prompt', sans-serif">Prompt</option>
+              <option value="'Kanit', sans-serif">Kanit</option>
+              <option value="Arial, sans-serif">Arial</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="sidebar-section">
+          <h3><i class="fas fa-tools"></i> เครื่องมือ</h3>
+          <div class="tool-buttons">
+            <button class="tool-btn" id="addLogo">
+              <i class="fas fa-image"></i> เพิ่มโลโก้
+            </button>
+            <button class="tool-btn" id="addField">
+              <i class="fas fa-plus-square"></i> เพิ่มฟิลด์
+            </button>
+            <button class="tool-btn" id="addItemBtn">
+              <i class="fas fa-table-list"></i> เพิ่มแถวใหม่
+            </button>
+          </div>
+
+          <div class="form-group" style="margin-top: 1rem;">
+            <label for="vatRate">
+              <i class="fas fa-percentage"></i> อัตราภาษีมูลค่าเพิ่ม
+            </label>
+            <select id="vatRate" class="vat-selector">
+              <option value="0">ไม่มี VAT (0%)</option>
+              <option value="7" selected>VAT 7%</option>
+              <option value="10">VAT 10%</option>
+              <option value="15">VAT 15%</option>
+            </select>
+          </div>
+        </div>
+      </aside>
+
+      <!-- Main Editor -->
+      <main class="editor-container">
+        <div class="editor-toolbar">
+          <div class="toolbar-group">
+            <button class="toolbar-btn" id="undo" title="เลิกทำ">
+              <i class="fas fa-undo"></i>
+            </button>
+            <button class="toolbar-btn" id="redo" title="ทำซ้ำ">
+              <i class="fas fa-redo"></i>
+            </button>
+          </div>
+          <div class="toolbar-group">
+            <button class="toolbar-btn" id="zoomOut" title="ซูมออก">
+              <i class="fas fa-search-minus"></i>
+            </button>
+            <span class="zoom-level">100%</span>
+            <button class="toolbar-btn" id="zoomIn" title="ซูมเข้า">
+              <i class="fas fa-search-plus"></i>
+            </button>
+          </div>
+        </div>
+
+        <div class="receipt-editor" id="receiptEditor">
+          <div class="receipt-page a4" id="receiptPage">
+            <!-- เนื้อหาใบเสร็จจะถูกแทรกที่นี่ -->
+            <div class="welcome-message">
+              <i class="fas fa-arrow-left"></i>
+              <p>เลือกเทมเพลตจากด้านซ้ายเพื่อเริ่มออกแบบใบเสร็จ</p>
+            </div>
+          </div>
+        </div>
+      </main>
+    </div>
+  </div>
+
+  <!-- Modal สำหรับเพิ่มโลโก้ -->
+  <div class="modal" id="logoModal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3>เพิ่มโลโก้</h3>
+        <button class="modal-close">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="upload-area" id="logoUpload">
+          <i class="fas fa-cloud-upload-alt"></i>
+          <p>ลากไฟล์มาวางหรือคลิกเพื่อเลือก</p>
+          <input type="file" accept="image/*" id="logoInput" hidden>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+  <script src="script.js"></script>
+</body>
+
+</html>
